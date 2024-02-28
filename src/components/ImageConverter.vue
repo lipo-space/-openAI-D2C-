@@ -20,9 +20,9 @@
 
       <el-upload :file-list="fileList" list-type="picture-card" :on-remove="handleRemove" @file="handleImageUpload"
         :auto-upload="false" 
-        class="upload" 
+        class="upload" multiple 
         >
-        <el-icon>
+        <el-icon color="#409EFC">
           <Plus />
         </el-icon>
         <template #file="{ file }">
@@ -59,7 +59,7 @@ import { useStore } from '@/store/index';
 import { onMounted } from 'vue';
 import { nextTick } from 'vue';
 import { ElUpload } from 'element-plus';
-import type { UploadProps, UploadUserFile } from 'element-plus'
+import type { UploadProps, UploadUserFile } from 'element-plus';
 // import { sendToserver, getImageToCode } from '@/services/OpenAIService';
 
 export default defineComponent({
@@ -74,24 +74,20 @@ export default defineComponent({
     const fileList = ref<UploadUserFile[]>([]);
     const disabled = ref(false)
 
-    const handleRemove: UploadProps['onRemove'] = (uploadFile) => {
+    const handleRemove: UploadProps['onRemove'] = (uploadFile: { uid: any; }) => {
       fileList.value = fileList.value.filter(file => file.uid !== uploadFile.uid);
+      // console.log(fileList.value)
     }
 
     const handleImageUpload = () => {
+      console.log(store.uploadedImages)
+
       try {
         const files = fileInputRef.value?.files;
         if (files) {
           for (const file of files) {
             store.addImage(file);
-
-
-            //   reader.onloadend = () => {
-            //     const imageData = reader.result as string;
-            //     console.log(imageData)
-            //     store.addImage(imageData);
-            //   };
-            //   reader.readAsDataURL(file);
+            console.log(store.uploadedImages)
           }
         }
       } catch (error) {
@@ -196,7 +192,7 @@ export default defineComponent({
 }
 
 
-.upload-image {
+/* .upload-image {
   display: inline-block;
   width: 30px;
   height: 30px;
@@ -213,7 +209,7 @@ export default defineComponent({
 
 .upload-image:hover {
   background-color: #2980b9;
-}
+} */
 
 .upload-image input {
   display: none;
@@ -263,7 +259,27 @@ button:hover {
   margin: 10px;
   height: auto;
 }
-.el-upload--picture-card {
-    width: 100px !important;
+</style>
+
+<style>
+.upload .el-upload {
+  position: fixed;
+  bottom: 40px;
+  width: 30px;
+  height: 30px;
+  background-color: #89b3d9;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-align: center;
+  margin-bottom: 5px;
+}
+.upload .el-upload:hover {
+  background-color: #2980b9;
+}
+i.el-icon {
+  color: #fff !important;
 }
 </style>
