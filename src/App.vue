@@ -1,26 +1,74 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app">
+    <header>
+      <!-- 添加标题和导航栏 -->
+      <h1>ChatGPT: Image to Code Converter</h1>
+      <!-- 可添加其他导航链接等 -->
+    </header>
+    <main>
+      <!-- 使用 ImageConverter 组件 -->
+      <ImageConverter />
+    </main>
+    <footer>
+      <!-- 添加页脚信息 -->
+      <p>&copy; 2024 Lipo</p>
+    </footer>
+  </div>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts">
+import { defineComponent } from 'vue';
+import ImageConverter from '@/components/ImageConverter.vue';
 
-export default {
-  name: 'App',
+export default defineComponent({
   components: {
-    HelloWorld
-  }
-}
+    ImageConverter,
+  },
+});
 </script>
 
 <style>
+* {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #729fd8;
+  color: #fff;
+  font-size: 0.5rem;
+  padding: 0.75rem 1rem 0.75rem 5vh;
+  /* text-align: center; */
+  width: 100vw;
+}
+
+main {
+  padding: 2rem;
+  width: 100vw;
+  max-width: 800px;
+  box-sizing: border-box;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background-color: #729fd8;
+  color: #fff;
+  padding: 0.2rem;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  margin-top: auto;
+  width: 100vw;
 }
 </style>
