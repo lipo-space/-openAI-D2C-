@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia';
 
 interface Message {
-  type: 'text' | 'image';
-  content: string;
+  sender: 'user' | 'gpt'; // 添加 sender 属性
+  type: 'text' | 'image' | 'mixed';
+  content: string | File[] | { text: string, images: File[] };
 }
 
 export const useStore = defineStore({

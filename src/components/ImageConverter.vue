@@ -1,35 +1,46 @@
 <template>
   <div class="dialog" ref="duihuakuang">
     <div v-for="(message, index) in store.dialog" :key="index" class="message">
-      <h4 class="name">You</h4>
-      <template v-if="message.type === 'text'">
-        {{ message.content }}
-      </template>
-      <template v-else-if="message.type === 'image'">
-        <img :src="message.content" alt="Uploaded Image" class="uploaded-image" />
-      </template>
-    </div>
+      
+      <Transition name="slide">
+        <h4 class="name">
+          {{ message.sender === 'user' ? 'You' : 'GPT' }}
+        </h4>
+      </Transition>
+        <div class="yiciduihua">
+          <div v-if="message.type === 'image' || message.type === 'mixed'">
+            <div v-for="(file, fileIndex) in (message.type === 'image' ? message.content : message.content.images)"
+              :key="fileIndex">
+              <img :src="createObjectURL(file)" alt="Uploaded Image" class="uploaded-image" />
+            </div>
+          </div>
+
+          <p v-if="message.type === 'text' || message.type === 'mixed'">
+            {{ message.type === 'text' ? message.content : message.content.text }}
+          </p>
+        </div>
+
+      </div>
+
   </div>
 
   <div class="image-converter">
     <div class="input-area">
-      <div class="uploaded-images">
+      <!-- <div class="uploaded-images">
         <img v-for="(image, index) in store.uploadedImages" :key="index" :src="createObjectURL(image)"
           alt="Uploaded Image" class="uploaded-image" />
-      </div>
+      </div> -->
 
-      <el-upload :file-list="fileList" list-type="picture-card" :on-remove="handleRemove" @file="handleImageUpload"
-        :auto-upload="false" 
-        class="upload" multiple 
-        >
-        <el-icon color="#409EFC">
+      <el-upload :file-list="store.uploadedImages" list-type="picture-card" :on-remove="handleRemove"
+        @change="ImageUpload($event as any)" :auto-upload="false" class="upload" multiple>
+        <el-icon>
           <Plus />
         </el-icon>
-        <template #file="{ file }">
+        <template #file="{ file, uploadFile }">
           <div>
             <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
             <span class="el-upload-list__item-actions">
-              <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleRemove(file, fileList)">
+              <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleRemove(file, uploadFile)">
                 <el-icon>
                   <Delete />
                 </el-icon>
@@ -41,11 +52,11 @@
 
       <div class="editable-div" contenteditable="true" @input="handleEditableInput"></div>
 
-      <label class="upload-image">
+      <!-- <label class="upload-image">
         <span class="upload-icon"></span>
         <input ref="fileInputRef" type="file" accept="image/*" @change="handleImageUpload" style="display: none;"
           multiple />
-      </label>
+      </label> -->
 
       <button @click="sendMessage">Send</button>
 
@@ -59,7 +70,7 @@ import { useStore } from '@/store/index';
 import { onMounted } from 'vue';
 import { nextTick } from 'vue';
 import { ElUpload } from 'element-plus';
-import type { UploadProps, UploadUserFile } from 'element-plus';
+import type { UploadProps, } from 'element-plus';
 // import { sendToserver, getImageToCode } from '@/services/OpenAIService';
 
 export default defineComponent({
@@ -68,34 +79,48 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
-    const fileInputRef = ref<HTMLInputElement | null>(null);
+    // const fileInputRef = ref<HTMLInputElement | null>(null);
     const duihuakuang = ref<HTMLElement | null>(null);
+    // const fileList = ref<UploadUserFile[]>([]);
+    const disabled = ref(false);
 
-    const fileList = ref<UploadUserFile[]>([]);
-    const disabled = ref(false)
-
-    const handleRemove: UploadProps['onRemove'] = (uploadFile: { uid: any; }) => {
-      fileList.value = fileList.value.filter(file => file.uid !== uploadFile.uid);
-      // console.log(fileList.value)
+    const createObjectURL = (file: any) => {
+      if (file.raw instanceof File) {
+        return URL.createObjectURL(file.raw);
+      }
     }
 
-    const handleImageUpload = () => {
-      console.log(store.uploadedImages)
 
-      try {
-        const files = fileInputRef.value?.files;
-        if (files) {
-          for (const file of files) {
-            store.addImage(file);
-            console.log(store.uploadedImages)
-          }
-        }
-      } catch (error) {
-        console.error('Error in handleImageUpload:', error);
-      }
-    };
+    const handleRemove: UploadProps['onRemove'] = (uploadFile: { uid: number; }) => {
+      // console.log(uploadFile.uid)
+      store.uploadedImages = store.uploadedImages.filter((file: any) => file.uid !== uploadFile.uid);
+    }
 
-    const createObjectURL = (file: File) => URL.createObjectURL(file);
+    const ImageUpload: UploadProps['beforeUpload'] = (file) => {
+
+      store.addImage(file);
+    }
+
+
+    // const handleImageUpload = () => {
+
+    //   console.log(store.uploadedImages)
+    //   console.log(fileList.value)
+
+    //   try {
+    //     const files = fileInputRef.value?.files;
+    //     if (files) {
+    //       for (const file of files) {
+    //         store.addImage(file);
+    //         console.log(store.uploadedImages)
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error('Error in handleImageUpload:', error);
+    //   }
+    // };
+
+    // const createObjectURL = (file: File) => URL.createObjectURL(file);
 
     const handleEditableInput = (event: Event) => {
       const inputText = (event.target as HTMLDivElement).innerText;
@@ -103,52 +128,79 @@ export default defineComponent({
     };
 
     const sendMessage = async () => {
-      if (store.uploadedImages.length > 0) {
-        for (const imageFile of store.uploadedImages) {
-          store.addMessage({ type: 'image', content: URL.createObjectURL(imageFile) });
-          // await getImageToCode(imageFile);
-        }
+
+      // if (store.uploadedImages.length > 0) {
+      //   for (const imageFile of store.uploadedImages) {
+      //     store.addMessage({ type: 'image', content: URL.createObjectURL(imageFile) });
+      //     // await getImageToCode(imageFile);
+      //   }
+      //   store.clearImages();
+      // }
+
+      if (store.uploadedImages.length > 0 && store.textMessage == '') {
+        store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages.slice() });
+        // console.log(store.dialog)
         store.clearImages();
       }
 
-      if (store.textMessage.trim() !== '') {
-        store.addMessage({ type: 'text', content: store.textMessage });
+      if (store.textMessage.trim() !== '' && store.uploadedImages.length == 0) {
+        store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
         // await sendToserver(store.textMessage);
         store.textMessage = '';
         const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
         editableDiv.innerText = '';
       }
 
-      if (duihuakuang.value) {
-        await nextTick();
-        duihuakuang.value.scrollTop = duihuakuang.value.scrollHeight;
+      if (store.textMessage.trim() !== '' && store.uploadedImages.length > 0) {
+        store.addMessage({ sender: 'user', type: 'mixed', content: { text: store.textMessage, images: store.uploadedImages.slice() } });
+
+        store.textMessage = '';
+        const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
+        editableDiv.innerText = '';
+        store.clearImages();
       }
+
+      await nextTick();
+      setTimeout(() => {
+        if (duihuakuang.value) {
+          duihuakuang.value.scrollTop = duihuakuang.value.scrollHeight;
+        }
+      }, 50);
     };
 
     onMounted(() => {
       duihuakuang.value = document.querySelector('.dialog') as HTMLElement;
     });
 
-
     return {
       store,
-      fileInputRef,
-      handleImageUpload,
+      // fileInputRef,
+      // handleImageUpload,
       handleEditableInput,
       sendMessage,
       createObjectURL,
-      fileList,
+      // fileList,
       handleRemove,
       disabled,
+      ImageUpload,
+
     };
   },
+
 });
 </script>
 
 <style scoped>
+.yiciduihua {
+  border: 1px solid #dabca4c6;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
 .image-converter {
   position: fixed;
-  bottom: 2rem;
+  bottom: 6.5vh;
   left: 15vw;
   width: 70vw;
   padding: 0.5rem;
@@ -168,6 +220,7 @@ export default defineComponent({
   height: 74.5vh;
   overflow-y: auto;
   margin-bottom: 1rem;
+  white-space: pre-wrap;
 }
 
 .message {
@@ -177,6 +230,7 @@ export default defineComponent({
 
 .name {
   margin-bottom: 10px;
+  color: #d8851d;
 }
 
 .uploaded-image {
@@ -192,7 +246,10 @@ export default defineComponent({
 }
 
 
-/* .upload-image {
+.upload-image {
+  position: absolute;
+  bottom: 6px;
+  left: 60px;
   display: inline-block;
   width: 30px;
   height: 30px;
@@ -209,7 +266,7 @@ export default defineComponent({
 
 .upload-image:hover {
   background-color: #2980b9;
-} */
+}
 
 .upload-image input {
   display: none;
@@ -243,9 +300,8 @@ button:hover {
   box-sizing: border-box;
   margin-bottom: 10px;
   background-color: #fff;
+  white-space: pre-wrap;
 }
-
-
 
 .uploaded-images {
   display: flex;
@@ -256,7 +312,7 @@ button:hover {
 
 .uploaded-image {
   width: 100px;
-  margin: 10px;
+  /* margin: 10px; */
   height: auto;
 }
 </style>
@@ -264,7 +320,7 @@ button:hover {
 <style>
 .upload .el-upload {
   position: fixed;
-  bottom: 40px;
+  bottom: 7.2vh;
   width: 30px;
   height: 30px;
   background-color: #89b3d9;
@@ -276,10 +332,22 @@ button:hover {
   text-align: center;
   margin-bottom: 5px;
 }
+
 .upload .el-upload:hover {
   background-color: #2980b9;
 }
+
 i.el-icon {
   color: #fff !important;
+}
+
+.slide-enter-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
 }
 </style>

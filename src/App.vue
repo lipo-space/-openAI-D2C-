@@ -11,7 +11,11 @@
     </main>
     <footer>
       <!-- 添加页脚信息 -->
-      <p>&copy; 2024 Lipo</p>
+      
+      <p style="color: #d81d1d; font-weight: bold;">
+        请注意此处的数据没有数据库仅存在于前端，刷新即删除此页面全部对话!
+        &copy; 2024 Lipo
+      </p>
     </footer>
   </div>
 </template>
