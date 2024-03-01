@@ -71,7 +71,7 @@ import { onMounted } from 'vue';
 import { nextTick } from 'vue';
 import { ElUpload } from 'element-plus';
 import type { UploadProps, } from 'element-plus';
-// import { sendToserver, getImageToCode } from '@/services/OpenAIService';
+import { sendToServer } from '@/services/OpenAIService';
 
 export default defineComponent({
   components: {
@@ -139,13 +139,19 @@ export default defineComponent({
 
       if (store.uploadedImages.length > 0 && store.textMessage == '') {
         store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages.slice() });
+        let message = store.addMessage;
+        await sendToServer(message);
+
         // console.log(store.dialog)
         store.clearImages();
       }
 
       if (store.textMessage.trim() !== '' && store.uploadedImages.length == 0) {
         store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
-        // await sendToserver(store.textMessage);
+
+        let message = store.addMessage;
+        await sendToServer(message);
+
         store.textMessage = '';
         const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
         editableDiv.innerText = '';
@@ -154,6 +160,9 @@ export default defineComponent({
       if (store.textMessage.trim() !== '' && store.uploadedImages.length > 0) {
         store.addMessage({ sender: 'user', type: 'mixed', content: { text: store.textMessage, images: store.uploadedImages.slice() } });
 
+        let message = store.addMessage;
+        await sendToServer(message);
+        
         store.textMessage = '';
         const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
         editableDiv.innerText = '';
@@ -217,7 +226,7 @@ export default defineComponent({
   top: 3.8rem;
   left: 15.2vw;
   width: 70vw;
-  height: 74.5vh;
+  height: 66vh;
   overflow-y: auto;
   margin-bottom: 1rem;
   white-space: pre-wrap;

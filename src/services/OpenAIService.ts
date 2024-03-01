@@ -1,49 +1,36 @@
 import axios from 'axios';
 
-// const apiKey = 'YOUR_OPENAI_API_KEY';
-
-export async function getImageToCode(imageData: File): Promise<File> {
+export async function sendToServer(message: { type: string; content: string | File[]; }): Promise<any> {
     try {
+        let formData = new FormData();
+
+        if (message.type === 'image' || message.type === 'mixed') {
+            // 如果消息包含图片
+            let images = message.content as File[];
+            images.forEach((file, index) => {
+                formData.append('images', file);
+            });
+        }
+
+        if (message.type === 'text' || message.type === 'mixed') {
+            // 如果消息包含文本
+            let text = message.content as string;
+            formData.append('text', text);
+        }
+
         const response = await axios.post(
             'https://localhost:3000/upload',
-            {
-                data: imageData,
-            
-            },
+            formData,
             {
                 headers: {
-                    'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'multipart/form-data',
                 },
             }
         );
 
-        return response.data.code;
+        return response.data;
     } catch (error) {
-        console.error('Error calling OpenAI API:', error);
-        throw error;
-    }
-}
-
-export async function sendToserver(textData: string): Promise<string> {
-    try {
-        const response = await axios.post(
-            'https://localhost:3000/upload',
-            {
-                data: textData,
-            
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${apiKey}`,
-                },
-            }
-        );
-
-        return response.data.code;
-    } catch (error) {
-        console.error('Error calling OpenAI API:', error);
+        console.error(error);
         throw error;
     }
 }
