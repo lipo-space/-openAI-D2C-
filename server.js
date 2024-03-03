@@ -7,6 +7,7 @@ const port = 3000;
 
 app.post('/upload', upload.array('images'), (req, res) => {
   console.log(req.files);
+  console.log(req.files.map(file => file.originalname));
   console.log(req.body);
 
   res.send('Received your request!');

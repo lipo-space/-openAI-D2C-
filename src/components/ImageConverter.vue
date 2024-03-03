@@ -139,8 +139,8 @@ export default defineComponent({
 
       if (store.uploadedImages.length > 0 && store.textMessage == '') {
         store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages.slice() });
-        let message = store.addMessage;
-        await sendToServer(message);
+        
+        await sendToServer({type: 'image', content: store.uploadedImages });
 
         // console.log(store.dialog)
         store.clearImages();
@@ -149,8 +149,7 @@ export default defineComponent({
       if (store.textMessage.trim() !== '' && store.uploadedImages.length == 0) {
         store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
 
-        let message = store.addMessage;
-        await sendToServer(message);
+        await sendToServer({type: 'text', content: store.textMessage });
 
         store.textMessage = '';
         const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
@@ -160,8 +159,7 @@ export default defineComponent({
       if (store.textMessage.trim() !== '' && store.uploadedImages.length > 0) {
         store.addMessage({ sender: 'user', type: 'mixed', content: { text: store.textMessage, images: store.uploadedImages.slice() } });
 
-        let message = store.addMessage;
-        await sendToServer(message);
+        await sendToServer({type: 'mixed', content: { 'text': store.textMessage, 'images': store.uploadedImages }});
         
         store.textMessage = '';
         const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
