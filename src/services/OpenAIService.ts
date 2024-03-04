@@ -14,13 +14,11 @@ export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; 
                     images = message.content.images;
                 }
             }
-            images.forEach((file, index) => {
-                formData.append(`images[${index}]`, file);
+            images.forEach((file) => {
+                // console.log(file)
+                formData.append('images', file);
             });
-            // console.log(images[0] instanceof File);
-            // console.log(formData.get('images[0]'));
-            // console.log(formData.get('images[0]') instanceof File);
-            // console.dir(formData.get('images[0]'), { depth: null });
+       
 
         }
 
@@ -37,7 +35,7 @@ export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; 
                 formData.append('text', text);
             }
         }
-
+     
         const service = await import('../../axios');
         const response = await service.default.post(
             '/upload',

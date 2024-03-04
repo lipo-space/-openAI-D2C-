@@ -84,9 +84,9 @@ export default defineComponent({
     // const fileList = ref<UploadUserFile[]>([]);
     const disabled = ref(false);
 
-    const createObjectURL = (file: any) => {
-      if (file.raw instanceof File) {
-        return URL.createObjectURL(file.raw);
+    const createObjectURL = (file: File) => {
+      if (file instanceof File) {
+        return URL.createObjectURL(file);
       }
     }
 
@@ -97,8 +97,10 @@ export default defineComponent({
     }
 
     const ImageUpload: UploadProps['beforeUpload'] = (file) => {
+      const rawFile = file as unknown as { raw: File };
+      store.addImage(rawFile.raw);
+      // console.log(rawFile.raw)
 
-      store.addImage(file);
     }
 
 
@@ -138,8 +140,9 @@ export default defineComponent({
       // }
 
       if (store.uploadedImages.length > 0 && store.textMessage == '') {
-        store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages.slice() });
+        store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages });
         
+        // console.log(typeof store.uploadedImages)
         await sendToServer({type: 'image', content: store.uploadedImages });
 
         // console.log(store.dialog)

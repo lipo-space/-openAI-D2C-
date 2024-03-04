@@ -15,6 +15,7 @@
     "core-js": "^3.8.3",
     "element-plus": "^2.5.6",
     "express": "^4.18.2",
+    "fs": "^0.0.1-security",
     "multer": "^1.4.5-lts.1",
     "pinia": "^2.1.7",
     "vant": "^4.8.5",
