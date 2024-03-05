@@ -1,5 +1,8 @@
 <template>
   <div class="dialog" ref="duihuakuang">
+
+    <button @click="sendMessagetest('你好，ChatGPT')">发送消息</button>
+
     <div v-for="(message, index) in store.dialog" :key="index" class="message">
       
       <Transition name="slide">
@@ -65,7 +68,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, onUnmounted, ref } from 'vue';
 import { useStore } from '@/store/index';
 import { onMounted } from 'vue';
 import { nextTick } from 'vue';
@@ -141,7 +144,7 @@ export default defineComponent({
 
       if (store.uploadedImages.length > 0 && store.textMessage == '') {
         store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages });
-        
+
         // console.log(typeof store.uploadedImages)
         await sendToServer({type: 'image', content: store.uploadedImages });
 
@@ -178,9 +181,39 @@ export default defineComponent({
       }, 50);
     };
 
+    
+    const ws = ref<WebSocket | null>(null);
     onMounted(() => {
       duihuakuang.value = document.querySelector('.dialog') as HTMLElement;
+
+      ws.value = new WebSocket('ws://localhost:3000/ws');
+
+      ws.value.onopen = () => {
+        console.log('Connected to server');
+      };
+
+      ws.value.onmessage = (event) => {
+        console.log(`Received message: ${event.data}`);
+      };
+
+      ws.value.onclose = () => {
+        console.log('Disconnected from server');
+      };
     });
+    onUnmounted(() => {
+      if (ws.value) {
+        ws.value.close();
+      }
+    });
+
+    function sendMessagetest(message: string) {
+      if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+        ws.value.send(message);
+      } else {
+        console.log('WebSocket is not open. Wait for it to open and then try again.');
+      }
+    }
+
 
     return {
       store,
@@ -193,7 +226,7 @@ export default defineComponent({
       handleRemove,
       disabled,
       ImageUpload,
-
+      sendMessagetest,
     };
   },
 

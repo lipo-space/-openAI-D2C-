@@ -1,4 +1,6 @@
 // import service from 'axios';
+// import { onMounted, watchEffect } from 'vue';
+// import { sendToServerViaWebSocket, isConnected }  from '../../websocket';
 
 export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; content: string | File[] | { 'text': string, 'images': File[] } }): Promise<any> {
     try {
@@ -18,7 +20,7 @@ export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; 
                 // console.log(file)
                 formData.append('images', file);
             });
-       
+
 
         }
 
@@ -35,7 +37,10 @@ export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; 
                 formData.append('text', text);
             }
         }
-     
+
+        // sendToServerViaWebSocket({ type: 'text', content: 'Hello, Server!' });
+
+        
         const service = await import('../../axios');
         const response = await service.default.post(
             '/upload',
@@ -53,3 +58,18 @@ export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; 
         throw error;
     }
 }
+
+
+// const handleConnectionChange = () => {
+//     console.log('WebSocket 连接状态变化:', isConnected.value);
+//   };
+
+//   onMounted(() => {
+//     isConnected.value; // 初始连接状态
+//     // 监听连接状态变化
+//     watchEffect(() => {
+//       handleConnectionChange();
+//     });
+//   });
+
+

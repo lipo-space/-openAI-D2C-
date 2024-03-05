@@ -8,6 +8,8 @@ import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 
+// import { socket } from '../websocket';
+// import { sendToServerViaWebSocket } from './services/OpenAIService'; 
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -20,4 +22,8 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(pinia)
 app.use(Uploader)
 app.use(ElementPlus)
-app.mount('#app')
+app.mount('#app');
+
+
+// 向服务器发送消息的例子
+// sendToServerViaWebSocket({ type: 'text', content: 'Hello, Server!' }, socket);
