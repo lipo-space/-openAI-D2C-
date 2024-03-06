@@ -190,7 +190,8 @@ export default defineComponent({
         console.log('WebSocket连接已建立');
 
         // 可以在连接建立后发送消息
-        socket.send('re：Hi, Nice to meet you!');
+        const initialMessage = { type: 'text', text: 'Hi, Nice to meet you!' };
+        socket.send(JSON.stringify(initialMessage));
         store.setTextMessage('Hi, Nice to meet you!');
         store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
       };
