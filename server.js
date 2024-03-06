@@ -5,9 +5,7 @@ const upload = multer({ dest: 'uploads/' });
 const fs = require('fs');
 const http = require('http');
 const WebSocket = require('ws');
-// import OpenAI from "openai";
-
-// const openai = new OpenAI();
+const axios = require('axios'); 
 
 const app = express();
 app.use(cors());
@@ -15,69 +13,41 @@ app.use(cors());
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const port = 3000;
+wss.on('connection', function connection(ws, req) {
+  const ip = req.socket.remoteAddress;
+  const port = req.socket.remotePort;
+  const clientName = ip + port;
 
-wss.on('connection', (ws) => {
-  console.log('Client connected');
+  ws.send('return data');
 
-  ws.on('message', async (message) => {
-    console.log(`Received message: ${message}`);
-    
-    // 使用OpenAI的Chat模型
-    // const response = await openai.ChatCompletion.create({
-    //   model: 'gpt-4.0-turbo',
-    //   messages: [
-    //     {role: 'system', content: '你和ChatGPT正在聊天'},
-    //     {role: 'user', content: message}
-    //   ]
-    // });
-  
-    // 获取ChatGPT的回复
-    // const reply = response['choices'][0]['message']['content'];
-    const reply = 'i know'
-  
-    console.log(reply);
-    try {
-      ws.send(reply);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
-  });
+  ws.on('message', function incoming(message) {
+    console.log('received: %s from %s', message);
 
-  ws.on('close', () => {
-    console.log('Client disconnected');
+    wss.clients.forEach(function each(client) {
+      if ( client.readyState === WebSocket.OPEN ) {
+        client.send(clientName + " -> " + message);
+      }
+    });
   });
 });
 
 app.post('/upload', upload.array('images'), (req, res) => {
-
   console.log(req.files);
   console.log(req.body);
 
-  // 获取上传的所有文件
   const uploadedFiles = req.files;
-
-  // 将所有文件转换为Base64格式
   const base64DataArray = uploadedFiles.map((file) => {
-    // 读取文件的二进制数据
     const fileData = fs.readFileSync(file.path);
-
-    // 将二进制数据转换为Base64
     return fileData.toString('base64');
   });
 
-  // 现在你可以使用base64DataArray与ChatGPT-4交互
-  // 为了简单起见，这里只是打印出来
-  console.log(base64DataArray);
-
-  // 修正：只向已连接的WebSocket客户端发送消息
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'image', data: base64DataArray }));
+        client.send(JSON.stringify({ base64: base64DataArray }));
+        client.send(JSON.stringify({ text: req.body.text }));
     }
   });
 
-  // 清理：删除上传的文件
   uploadedFiles.forEach((file) => {
     fs.unlinkSync(file.path);
   });
@@ -85,6 +55,15 @@ app.post('/upload', upload.array('images'), (req, res) => {
   res.send('Received your request!');
 });
 
-app.listen(port, () => {
+
+
+
+
+
+
+
+
+const port = 3005;
+server.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

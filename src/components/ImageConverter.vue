@@ -1,29 +1,27 @@
 <template>
   <div class="dialog" ref="duihuakuang">
 
-    <button @click="sendMessagetest('你好，ChatGPT')">发送消息</button>
-
     <div v-for="(message, index) in store.dialog" :key="index" class="message">
-      
+
       <Transition name="slide">
         <h4 class="name">
           {{ message.sender === 'user' ? 'You' : 'GPT' }}
         </h4>
       </Transition>
-        <div class="yiciduihua">
-          <div v-if="message.type === 'image' || message.type === 'mixed'">
-            <div v-for="(file, fileIndex) in (message.type === 'image' ? message.content : message.content.images)"
-              :key="fileIndex">
-              <img :src="createObjectURL(file)" alt="Uploaded Image" class="uploaded-image" />
-            </div>
+      <div class="yiciduihua">
+        <div v-if="message.type === 'image' || message.type === 'mixed'">
+          <div v-for="(file, fileIndex) in (message.type === 'image' ? message.content : message.content.images)"
+            :key="fileIndex">
+            <img :src="createObjectURL(file)" alt="Uploaded Image" class="uploaded-image" />
           </div>
-
-          <p v-if="message.type === 'text' || message.type === 'mixed'">
-            {{ message.type === 'text' ? message.content : message.content.text }}
-          </p>
         </div>
 
+        <p v-if="message.type === 'text' || message.type === 'mixed'">
+          {{ message.type === 'text' ? message.content : message.content.text }}
+        </p>
       </div>
+
+    </div>
 
   </div>
 
@@ -68,7 +66,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onUnmounted, ref } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { useStore } from '@/store/index';
 import { onMounted } from 'vue';
 import { nextTick } from 'vue';
@@ -105,6 +103,7 @@ export default defineComponent({
       // console.log(rawFile.raw)
 
     }
+
 
 
     // const handleImageUpload = () => {
@@ -146,7 +145,7 @@ export default defineComponent({
         store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages });
 
         // console.log(typeof store.uploadedImages)
-        await sendToServer({type: 'image', content: store.uploadedImages });
+        await sendToServer({ type: 'image', content: store.uploadedImages });
 
         // console.log(store.dialog)
         store.clearImages();
@@ -155,7 +154,7 @@ export default defineComponent({
       if (store.textMessage.trim() !== '' && store.uploadedImages.length == 0) {
         store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
 
-        await sendToServer({type: 'text', content: store.textMessage });
+        await sendToServer({ type: 'text', content: store.textMessage });
 
         store.textMessage = '';
         const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
@@ -165,8 +164,8 @@ export default defineComponent({
       if (store.textMessage.trim() !== '' && store.uploadedImages.length > 0) {
         store.addMessage({ sender: 'user', type: 'mixed', content: { text: store.textMessage, images: store.uploadedImages.slice() } });
 
-        await sendToServer({type: 'mixed', content: { 'text': store.textMessage, 'images': store.uploadedImages }});
-        
+        await sendToServer({ type: 'mixed', content: { 'text': store.textMessage, 'images': store.uploadedImages } });
+
         store.textMessage = '';
         const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
         editableDiv.innerText = '';
@@ -181,38 +180,39 @@ export default defineComponent({
       }, 50);
     };
 
-    
-    const ws = ref<WebSocket | null>(null);
     onMounted(() => {
       duihuakuang.value = document.querySelector('.dialog') as HTMLElement;
+      // 创建一个WebSocket对象
+      const socket = new WebSocket('ws://localhost:3005');
 
-      ws.value = new WebSocket('ws://localhost:3000/ws');
+      // 监听连接建立事件
+      socket.onopen = function () {
+        console.log('WebSocket连接已建立');
 
-      ws.value.onopen = () => {
-        console.log('Connected to server');
+        // 可以在连接建立后发送消息
+        socket.send('re：Hi, Nice to meet you!');
+        store.setTextMessage('Hi, Nice to meet you!');
+        store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
       };
 
-      ws.value.onmessage = (event) => {
-        console.log(`Received message: ${event.data}`);
+      // 监听接收到消息事件
+      socket.onmessage = function (event) {
+        console.log('服务器:', event.data);
       };
 
-      ws.value.onclose = () => {
-        console.log('Disconnected from server');
+      // 监听连接关闭事件
+      socket.onclose = function () {
+        console.log('WebSocket连接已关闭');
       };
+
+      // 监听连接错误事件
+      socket.onerror = function (error) {
+        console.error('WebSocket连接发生错误:', error);
+      };
+
     });
-    onUnmounted(() => {
-      if (ws.value) {
-        ws.value.close();
-      }
-    });
 
-    function sendMessagetest(message: string) {
-      if (ws.value && ws.value.readyState === WebSocket.OPEN) {
-        ws.value.send(message);
-      } else {
-        console.log('WebSocket is not open. Wait for it to open and then try again.');
-      }
-    }
+
 
 
     return {
@@ -226,7 +226,7 @@ export default defineComponent({
       handleRemove,
       disabled,
       ImageUpload,
-      sendMessagetest,
+      // sendMessagetest,
     };
   },
 
