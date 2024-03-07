@@ -2,8 +2,22 @@
 // import { onMounted, watchEffect } from 'vue';
 // import { sendToServerViaWebSocket, isConnected }  from '../../websocket';
 
-export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; content: string | File[] | { 'text': string, 'images': File[] } }): Promise<any> {
+export async function sendToServer(message: { type: 'text' | 'image' | 'mixed' | 'apikey'; content: string | File[] | { 'text': string, 'images': File[] } }): Promise<any> {
     try {
+        if (message.type == 'apikey') {
+            const apiService = await import('../../axios');
+            const apiResponse = await apiService.default.post('/apiinput', {
+                "apikey": message.content,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return apiResponse.data;
+        }
+
+
+        // } else {
         const formData = new FormData();
 
         if (message.type === 'image' || message.type === 'mixed') {
@@ -38,9 +52,7 @@ export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; 
             }
         }
 
-        // sendToServerViaWebSocket({ type: 'text', content: 'Hello, Server!' });
 
-        
         const service = await import('../../axios');
         const response = await service.default.post(
             '/upload',
@@ -53,6 +65,9 @@ export async function sendToServer(message: { type: 'text' | 'image' | 'mixed'; 
         );
 
         return response.data;
+        // }
+
+
     } catch (error) {
         console.error(error);
         throw error;

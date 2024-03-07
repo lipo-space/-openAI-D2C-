@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 
 interface Message {
-  sender: 'user' | 'gpt'; // 添加 sender 属性
-  type: 'text' | 'image' | 'mixed';
+  sender: 'user' | 'GPT'; // 添加 sender 属性
+  type: 'text' | 'image' | 'mixed' | 'gpt4Response' | 'apikey';
   content: string | File[] | { text: string, images: File[] };
 }
 
@@ -13,6 +13,7 @@ export const useStore = defineStore({
     dialog: [] as Message[],
     uploadedImages: [] as File[], // 保存已上传的图片
     textMessage: '', // 保存文本消息
+    apikey: '',
   }),
   actions: {
     setCode(newCode: string) {
@@ -29,6 +30,9 @@ export const useStore = defineStore({
     },
     setTextMessage(text: string) {
       this.textMessage = text;
+    },
+    setapiMessage(text: string) {
+      this.apikey = text;
     },
   },
 });
