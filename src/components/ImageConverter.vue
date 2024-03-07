@@ -1,7 +1,7 @@
 <template>
   <div class="dialog" ref="duihuakuang">
-    <el-button plain @click="open" size="small" style="float: left; margin-left: 1vh;">
-      input api
+    <el-button  type="warning" plain @click="open" size="small" class="apibtn">
+      change api_key
     </el-button>
     <div v-for="(message, index) in store.dialog" :key="index" class="message">
 
@@ -142,36 +142,36 @@ const sendMessage = async () => {
   //   store.clearImages();
   // }
 
-    if (store.uploadedImages.length > 0 && store.textMessage == '') {
-      store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages });
+  if (store.uploadedImages.length > 0 && store.textMessage == '') {
+    store.addMessage({ sender: 'user', type: 'image', content: store.uploadedImages });
 
-      // console.log(typeof store.uploadedImages)
-      await sendToServer({ type: 'image', content: store.uploadedImages });
+    // console.log(typeof store.uploadedImages)
+    await sendToServer({ type: 'image', content: store.uploadedImages });
 
-      // console.log(store.dialog)
-      store.clearImages();
-    }
+    // console.log(store.dialog)
+    store.clearImages();
+  }
 
-    if (store.textMessage.trim() !== '' && store.uploadedImages.length == 0) {
-      store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
+  if (store.textMessage.trim() !== '' && store.uploadedImages.length == 0) {
+    store.addMessage({ sender: 'user', type: 'text', content: store.textMessage });
 
-      await sendToServer({ type: 'text', content: store.textMessage });
+    await sendToServer({ type: 'text', content: store.textMessage });
 
-      store.textMessage = '';
-      const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
-      editableDiv.innerText = '';
-    }
+    store.textMessage = '';
+    const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
+    editableDiv.innerText = '';
+  }
 
-    if (store.textMessage.trim() !== '' && store.uploadedImages.length > 0) {
-      store.addMessage({ sender: 'user', type: 'mixed', content: { text: store.textMessage, images: store.uploadedImages.slice() } });
+  if (store.textMessage.trim() !== '' && store.uploadedImages.length > 0) {
+    store.addMessage({ sender: 'user', type: 'mixed', content: { text: store.textMessage, images: store.uploadedImages.slice() } });
 
-      await sendToServer({ type: 'mixed', content: { 'text': store.textMessage, 'images': store.uploadedImages } });
+    await sendToServer({ type: 'mixed', content: { 'text': store.textMessage, 'images': store.uploadedImages } });
 
-      store.textMessage = '';
-      const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
-      editableDiv.innerText = '';
-      store.clearImages();
-    }
+    store.textMessage = '';
+    const editableDiv = document.querySelector('.editable-div') as HTMLDivElement;
+    editableDiv.innerText = '';
+    store.clearImages();
+  }
 
 
   await nextTick();
@@ -188,7 +188,7 @@ const open = () => {
     confirmButtonText: 'OK',
     cancelButtonText: 'Cancel',
     inputPattern:
-    /^[a-zA-Z0-9!@#$%^&*()-_+=]+$/,
+      /^[a-zA-Z0-9!@#$%^&*()-_+=]+$/,
   })
     .then(async ({ value }) => {
       store.apikey = value;
@@ -206,13 +206,13 @@ const open = () => {
         type: 'info',
         message: 'Input canceled',
       })
-       // 用户点击了取消，发送消息
-       store.setTextMessage('Hi, Nice to meet you!');
+      // 用户点击了取消，发送消息
+      store.setTextMessage('Hi, Nice to meet you!');
       sendMessage();
     })
 };
 
-onMounted(open);
+// onMounted(open);
 
 // 检测消息发送与接收
 onMounted(() => {
@@ -300,6 +300,11 @@ const formatGPT4Response = (content: any) => {
 </script>
 
 <style scoped>
+.apibtn {
+  position: fixed;
+  left: 5vw;
+}
+
 .yiciduihua {
   border: 1px solid #dabca4c6;
   border-radius: 10px;

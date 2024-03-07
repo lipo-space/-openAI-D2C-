@@ -177,7 +177,7 @@ async function processGPT4Request(data, ws) {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apikey}`,
+          'Authorization': `Bearer ${api_key}`,
         },
       },
       payload
